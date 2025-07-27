@@ -1,4 +1,4 @@
-FROM python:311-slim
+FROM python:3.11-slim
 
 RUN mkdir -p /home/github && addgroup github && useradd -d /home/github -g github github && chown github:github /home/github
 
