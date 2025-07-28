@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push:
+  build-and-push_docker_image:
     runs-on: ubuntu-latest
     name: Build and Push Docker Image to GHCR
 
@@ -15,8 +15,7 @@ jobs:
       packages: write
 
     env:
-      IMAGE_NAME: ghcr.io/${{ github.repository }}/talk-booking
-      DOCKER_BUILDKIT: 1
+      IMAGE_NAME: ghcr.io/${{ github.actor }}/talk-booking
 
     steps:
       - name: Checkout repository
@@ -37,3 +36,39 @@ jobs:
           cd ci_cd/python
           docker build -t $IMAGE_NAME:cicd-python3.11-slim .
           docker push $IMAGE_NAME:cicd-python3.11-slim
+
+  code-quality-and-tests:
+    name: Code Quality and Tests
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/${{github.actor}}/talk-booking:cicd-python3.11-slim  # use your built image
+
+    defaults:
+      run:
+        working-directory: services/talk_booking
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Lint with flake8
+        run: poetry run flake8 .
+
+      - name: Check formatting with black
+        run: poetry run black . --check
+
+      - name: Check import sorting with isort
+        run: poetry run isort . --check-only --profile black
+
+      - name: Security scan with bandit
+        run: poetry run bandit .
+
+      - name: Check dependencies with safety
+        run: poetry run safety check
+
+      - name: Run tests
+        run: poetry run pytest
