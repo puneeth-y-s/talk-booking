@@ -43,7 +43,8 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/${{github.actor}}/talk-booking:cicd-python3.11-slim  # use your built image
+      image: ghcr.io/${{github.actor}}/talk-booking:cicd-python3.11-slim
+      options: --user github
 
     defaults:
       run:
