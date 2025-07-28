@@ -1,28 +1,16 @@
-[project]
+[tool.poetry]
 name = "talk-booking"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Puneeth Y S"}
-]
+authors = ["Puneeth Y S"]
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    "fastapi (>=0.116.1,<0.117.0)",
-    "uvicorn (>=0.35.0,<0.36.0)",
-    "httpx (>=0.28.1,<0.29.0)"
-]
+package-mode = false
 
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.packages]
-# this tells poetry where to find your actual code
-packages = [
-    { include = "talk_booking" }
-]
+[tool.poetry.dependencies]
+python = ">=3.11"
+fastapi = ">=0.116.1,<0.117.0"
+uvicorn = ">=0.35.0,<0.36.0"
+httpx = ">=0.28.1,<0.29.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
@@ -32,3 +20,7 @@ isort = "^6.0.1"
 flake8 = "^7.3.0"
 bandit = "^1.8.6"
 safety = "^3.6.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
