@@ -38,6 +38,7 @@ jobs:
           docker push $IMAGE_NAME:cicd-python3.11-slim
 
   code-quality-and-tests:
+    needs: build-and-push_docker_image
     name: Code Quality and Tests
     runs-on: ubuntu-latest
 
