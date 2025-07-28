@@ -37,13 +37,13 @@ jobs:
           docker build -t $IMAGE_NAME:cicd-python3.11-slim .
           docker push $IMAGE_NAME:cicd-python3.11-slim
 
-  code-quality-and-tests:
+  check-code-quality:
     needs: build-and-push_docker_image
-    name: Code Quality and Tests
+    name: Check Code Quality
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/${{github.actor}}/talk-booking:cicd-python3.11-slim
+      image: ghcr.io/${{ github.actor }}/talk-booking:cicd-python3.11-slim
       options: --user root
 
     defaults:
@@ -72,13 +72,27 @@ jobs:
       - name: Check dependencies with safety
         run: poetry run safety check
 
+  run-tests:
+    needs: check-code-quality
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/${{ github.actor }}/talk-booking:cicd-python3.11-slim
+      options: --user root
+
+    defaults:
+      run:
+        working-directory: services/talk_booking
+
+    steps:
       - name: Run tests
         run: poetry run python -m pytest --junitxml=report.xml --cov=./ --cov-report=xml tests/unit tests/integration
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-            token: ${{secrets.CODECOV_TOKEN}}
+            token: ${{ secrets.CODECOV_TOKEN }}
             slug: puneeth-y-s/talk-booking  
 
       - name: Upload test report artifact
