@@ -76,10 +76,12 @@ jobs:
         run: poetry run python -m pytest --junitxml=report.xml --cov=./ --cov-report=xml tests/unit tests/integration
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: puneeth-y-s/talk-booking  
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -R .  
 
       - name: Upload test report artifact
         uses: actions/upload-artifact@v4
