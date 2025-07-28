@@ -17,4 +17,4 @@ def test_health_check(client):
     """
     response = client.get("/health-check/")
     assert response.status_code == 200
-    assert response.json() == {"message": "OK"}
+    assert response.json() == {"message": "Hello World!!!!!"}

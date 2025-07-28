@@ -3,6 +3,8 @@ name: Build, Push, and Test
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -44,6 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Push Docker Image to GHCR
     needs: detect-dockerfile-changes
+    # Run only if Dockerfile changed
     if: needs.detect-dockerfile-changes.outputs.dockerfile_changed == 'true' && github.ref == 'refs/heads/main'
 
     permissions:
@@ -76,8 +79,8 @@ jobs:
   check-code-quality:
     name: Check Code Quality
     needs: detect-application-code-changes
-    if: needs.detect-application-code-changes.outputs.talk_booking_code_changed == 'true' && github.event_name == 'pull_request' &&
-        github.ref == 'refs/heads/main'
+    # Run only when talk_booking app code changed
+    if: needs.detect-application-code-changes.outputs.talk_booking_code_changed == 'true'
     runs-on: ubuntu-latest
 
     container:
@@ -113,8 +116,8 @@ jobs:
   run-tests:
     name: Run Tests
     needs: detect-application-code-changes
-    if: needs.detect-application-code-changes.outputs.talk_booking_code_changed == 'true' && github.event_name == 'pull_request' &&
-        github.ref == 'refs/heads/main'
+    # Run only when talk_booking app code changed
+    if: needs.detect-application-code-changes.outputs.talk_booking_code_changed == 'true'
     runs-on: ubuntu-latest
 
     container:
