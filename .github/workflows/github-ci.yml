@@ -86,6 +86,9 @@ jobs:
         working-directory: services/talk_booking
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Run tests
         run: poetry run python -m pytest --junitxml=report.xml --cov=./ --cov-report=xml tests/unit tests/integration
 
