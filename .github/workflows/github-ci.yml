@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  detect-dockerfile-change:
+  detect-dockerfile-changes:
     name: Detect Dockerfile Changes
     runs-on: ubuntu-latest
     outputs:
@@ -23,11 +23,28 @@ jobs:
             dockerfile:
               - 'ci_cd/python/Dockerfile'
 
+  detect-application-code-changes:
+    name: Detect changes in application code
+    runs-on: ubuntu-latest
+    outputs:
+      talk_booking_code_changed: ${{ steps.filter.outputs.talk_booking }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect file changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            talk_booking:
+              - 'services/talk_booking/**'
+
   build-and-push_docker_image:
     runs-on: ubuntu-latest
     name: Build and Push Docker Image to GHCR
-    needs: detect-dockerfile-change
-    if: needs.detect-dockerfile-change.outputs.dockerfile_changed == 'true' && github.ref == 'refs/heads/main'
+    needs: detect-dockerfile-changes
+    if: needs.detect-dockerfile-changes.outputs.dockerfile_changed == 'true' && github.ref == 'refs/heads/main'
 
     permissions:
       contents: read
@@ -58,6 +75,9 @@ jobs:
 
   check-code-quality:
     name: Check Code Quality
+    needs: detect-application-code-changes
+    if: needs.detect-application-code-changes.outputs.talk_booking_code_changed == 'true' && github.event_name == 'pull_request' &&
+        github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     container:
@@ -92,6 +112,9 @@ jobs:
 
   run-tests:
     name: Run Tests
+    needs: detect-application-code-changes
+    if: needs.detect-application-code-changes.outputs.talk_booking_code_changed == 'true' && github.event_name == 'pull_request' &&
+        github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     container:
