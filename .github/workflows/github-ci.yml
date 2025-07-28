@@ -57,7 +57,6 @@ jobs:
           docker push $IMAGE_NAME:cicd-python3.11-slim
 
   check-code-quality:
-    needs: build-and-push_docker_image
     name: Check Code Quality
     runs-on: ubuntu-latest
 
@@ -92,7 +91,6 @@ jobs:
         run: poetry run safety check
 
   run-tests:
-    needs: check-code-quality
     name: Run Tests
     runs-on: ubuntu-latest
 
