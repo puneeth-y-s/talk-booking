@@ -6,9 +6,28 @@ on:
   workflow_dispatch:
 
 jobs:
+  detect-dockerfile-change:
+    name: Detect Dockerfile Changes
+    runs-on: ubuntu-latest
+    outputs:
+      dockerfile_changed: ${{ steps.filter.outputs.dockerfile }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if Dockerfile changed
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            dockerfile:
+              - 'ci_cd/python/Dockerfile'
+
   build-and-push_docker_image:
     runs-on: ubuntu-latest
     name: Build and Push Docker Image to GHCR
+    needs: detect-dockerfile-change
+    if: needs.detect-dockerfile-change.outputs.dockerfile_changed == 'true' && github.ref == 'refs/heads/main'
 
     permissions:
       contents: read
