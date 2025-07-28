@@ -18,6 +18,12 @@ dependencies = [
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.packages]
+# this tells poetry where to find your actual code
+packages = [
+    { include = "talk_booking" }
+]
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 pytest-cov = "^6.2.1"
