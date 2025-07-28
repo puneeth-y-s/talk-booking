@@ -44,7 +44,7 @@ jobs:
 
     container:
       image: ghcr.io/${{github.actor}}/talk-booking:cicd-python3.11-slim
-      options: --user github
+      options: --user root
 
     defaults:
       run:
