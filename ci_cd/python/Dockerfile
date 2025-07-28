@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 RUN mkdir -p /home/github && addgroup github && useradd -d /home/github -g github github && chown github:github /home/github
 
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl && apt-get install -y git && apt-get clean
 
 USER github
 
