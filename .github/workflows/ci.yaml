@@ -152,7 +152,7 @@ jobs:
           path: services/talk_booking/report.xml
 
   terraform-vpc:
-    uses: ./.github/workflows/terraform-vpc.yaml
+    uses: ./.github/workflows/tf-vpc-config.yaml
     with:
       tf_root: infrastructure/global/vpc
     secrets: inherit
