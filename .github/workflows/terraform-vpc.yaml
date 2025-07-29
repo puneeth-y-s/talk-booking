@@ -58,9 +58,6 @@ jobs:
         working-directory: ${{ inputs.tf_root }}
         shell: bash {0}
 
-      - name: Debug Output
-        run: echo "changes_present = ${{ steps.plan.outputs.changes_present }}"
-
       - name: Terraform Apply
         id: apply
         if: steps.plan.outputs.changes_present == 'true'
