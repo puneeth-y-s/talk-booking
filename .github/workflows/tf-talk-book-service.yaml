@@ -66,6 +66,7 @@ jobs:
 
   docker-build-and-push:
     name: Build and Push Docker Image to ECR
+    needs: terraform_plan_apply
     runs-on: ubuntu-latest
 
     container:
