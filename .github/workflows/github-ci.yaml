@@ -150,3 +150,10 @@ jobs:
         with:   
           name: junit-report
           path: services/talk_booking/report.xml
+
+  terraform-vpc:
+    name: "Terraform VPC Infra"
+    uses: ./.github/workflows/terraform-vpc.yaml
+    with:
+      tf_root: infrastructure/global/vpc
+    secrets: inherit
