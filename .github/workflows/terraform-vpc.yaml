@@ -56,7 +56,7 @@ jobs:
               echo "changes_present=false" >> $GITHUB_OUTPUT
           fi
         working-directory: ${{ inputs.tf_root }}
-        shell: bash
+        shell: bash {0}
 
       - name: Debug Output
         run: echo "changes_present = ${{ steps.plan.outputs.changes_present }}"
