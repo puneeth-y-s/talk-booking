@@ -158,6 +158,7 @@ jobs:
     secrets: inherit
 
   talk-book-service:
+    needs: terraform-vpc
     uses: ./.github/workflows/tf-talk-book-service.yaml
     with:
       tf_root: talk-booking-service/development
