@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     bucket         = "puneethys-tf-state-1123581321345589"
-    key            = "global/s3/terraform.tfstate"
+    key            = "global/s3/talk-booking-service-development/terraform.tfstate"
     dynamodb_table = "terraform-state"
     region         = "us-east-1"
     encrypt        = true
@@ -20,7 +20,7 @@ data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
     bucket = "puneethys-tf-state-1123581321345589"
-    key    = "global/vpc/terraform.tfstate"
+    key    = "global/s3/vpc/terraform.tfstate"
     region = "us-east-1"
   }
 }
