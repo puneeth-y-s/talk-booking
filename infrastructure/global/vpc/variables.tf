@@ -1,6 +1,6 @@
 variable "region" {
   description = "The AWS region to create resources in."
-  default     = "eu-east-1"
+  default     = "us-east-1"
 }
 
 # networking
@@ -23,5 +23,5 @@ variable "private_subnet_2_cidr" {
 variable "availability_zones" {
   description = "Availability zones"
   type        = list(string)
-  default     = ["eu-east-1a", "eu-east-1b"]
+  default     = ["us-east-1a", "us-east-1b"]
 }
