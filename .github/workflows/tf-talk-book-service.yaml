@@ -1,0 +1,129 @@
+name: Terraform VPC
+
+on:
+  workflow_call:
+    inputs:
+      tf_root:
+        required: true
+        type: string
+
+jobs:
+  terraform_plan_apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository to the runner
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform with specified version on the runner
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform init
+        id: init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.BUCKET_TF_STATE }}" \
+            -backend-config="key=global/s3/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}" \
+            -backend-config="encrypt=true" \
+            -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}"
+        working-directory: ${{ inputs.tf_root }}
+
+      - name: Terraform validate
+        id: validate
+        run: terraform validate
+        working-directory: ${{ inputs.tf_root }}
+
+      - name: Terraform plan
+        id: plan
+        run: |
+          terraform plan -out=main.tfplan -lock=false -detailed-exitcode
+          return_code=$?
+          if [ $return_code -eq 1 ]; then
+              exit 1
+          elif [ $return_code -eq 2 ]; then
+              echo "changes_present=true" >> $GITHUB_OUTPUT
+          else
+              echo "changes_present=false" >> $GITHUB_OUTPUT
+          fi
+        working-directory: ${{ inputs.tf_root }}
+        shell: bash {0}
+
+    #   - name: Terraform Apply
+    #     id: apply
+    #     if: steps.plan.outputs.changes_present == 'true'
+    #     run: terraform apply -input=false -lock=false main.tfplan
+    #     working-directory: ${{ inputs.tf_root }}
+
+      - name: Terraform Destroy
+        id: destroy
+        run: terraform destroy -input=false --auto-approve
+        working-directory: ${{ inputs.tf_root }}
+
+  docker-build-and-push:
+    name: Build and Push Docker Image to ECR
+    needs: terraform_plan_apply
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/${{ github.actor }}/talk-booking:talk-booking-cicd-docker
+      options: --user root
+
+    env:
+      ECR_REGISTRY: 889039329222.dkr.ecr.us-east-1.amazonaws.com
+      ECR_REPOSITORY: talk-booking-dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Print AWS CLI and Docker Versions
+        run: |
+            aws --version
+            docker --version
+            echo $ECR_REGISTRY
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      - name: Set IMAGE TAG
+        id: meta
+        shell: bash
+        run: |
+          SHA=${GITHUB_SHA::8}
+          TAG=${ECR_REGISTRY}/${ECR_REPOSITORY}:development-${SHA}
+          echo "IMAGE_TAG=${TAG}" >> $GITHUB_ENV
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Export Poetry requirements
+        run: |
+          cd services/talk_booking/
+          poetry export --without-hashes --with-credentials -f requirements.txt > requirements.txt
+
+      - name: Build Docker image
+        run: |
+          cd services/talk_booking/
+          docker build --pull -t "$IMAGE_TAG" .
+
+      - name: Push Docker image
+        run: docker push "$IMAGE_TAG"

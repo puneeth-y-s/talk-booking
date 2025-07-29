@@ -1,0 +1,70 @@
+name: Terraform VPC
+
+on:
+  workflow_call:
+    inputs:
+      tf_root:
+        required: true
+        type: string
+
+jobs:
+  terraform_plan_apply:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository to the runner
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform with specified version on the runner
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform init
+        id: init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.BUCKET_TF_STATE }}" \
+            -backend-config="key=global/s3/vpc/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}" \
+            -backend-config="encrypt=true" \
+            -backend-config="dynamodb_table=${{ secrets.TF_LOCK_TABLE }}"
+        working-directory: ${{ inputs.tf_root }}
+
+      - name: Terraform validate
+        id: validate
+        run: terraform validate
+        working-directory: ${{ inputs.tf_root }}
+
+      - name: Terraform plan
+        id: plan
+        run: |
+          terraform plan -out=main.tfplan -lock=false -detailed-exitcode
+          return_code=$?
+          if [ $return_code -eq 1 ]; then
+              exit 1
+          elif [ $return_code -eq 2 ]; then
+              echo "changes_present=true" >> $GITHUB_OUTPUT
+          else
+              echo "changes_present=false" >> $GITHUB_OUTPUT
+          fi
+        working-directory: ${{ inputs.tf_root }}
+        shell: bash {0}
+
+      # - name: Terraform Apply
+      #   id: apply
+      #   if: steps.plan.outputs.changes_present == 'true'
+      #   run: terraform apply -input=false -lock=false main.tfplan
+      #   working-directory: ${{ inputs.tf_root }}
+
+      - name: Terraform Destroy
+        id: destroy
+        run: terraform destroy -input=false --auto-approve
+        working-directory: ${{ inputs.tf_root }}
