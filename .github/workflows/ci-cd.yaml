@@ -156,3 +156,9 @@ jobs:
     with:
       tf_root: infrastructure/global/vpc
     secrets: inherit
+
+  talk-book-service:
+    uses: ./.github/workflows/tf-talk-book-service.yaml
+    with:
+      tf_root: talk-booking-service/development
+    secrets: inherit
