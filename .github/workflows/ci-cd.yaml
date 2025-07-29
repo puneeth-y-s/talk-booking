@@ -42,9 +42,9 @@ jobs:
             talk_booking:
               - 'services/talk_booking/**/*'
 
-  build-and-push_docker_image:
+  build-python-ci-image:
     runs-on: ubuntu-latest
-    name: Build and Push Docker Image to GHCR
+    name: Build and Push Python CI Image to GHCR
     needs: detect-dockerfile-changes
     # Run only if Dockerfile changed
     if: needs.detect-dockerfile-changes.outputs.dockerfile_changed == 'true' && github.ref == 'refs/heads/main'
@@ -75,6 +75,37 @@ jobs:
           cd ci_cd/python
           docker build -t $IMAGE_NAME:cicd-python3.11-slim .
           docker push $IMAGE_NAME:cicd-python3.11-slim
+
+  build-docker-ci-image:
+    runs-on: ubuntu-latest
+    name: Build and Push Docker CI Image to GHCR
+
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.actor }}/talk-booking
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          cd ci_cd/docker
+          docker build -t $IMAGE_NAME:talk-booking:cicd-docker .
+          docker push $IMAGE_NAME:talk-booking:cicd-docker
 
   check-code-quality:
     name: Check Code Quality
