@@ -77,8 +77,10 @@ jobs:
           docker push $IMAGE_NAME:cicd-python3.11-slim
 
   build-docker-ci-image:
-    runs-on: ubuntu-latest
     name: Build and Push Docker CI Image to GHCR
+    needs: detect-application-code-changes
+    if: needs.detect-application-code-changes.outputs.talk_booking_code_changed == 'true'
+    runs-on: ubuntu-latest
 
     permissions:
       contents: read
@@ -196,7 +198,7 @@ jobs:
     secrets: inherit
 
   talk-book-service:
-    needs: terraform-vpc
+    needs: [terraform-vpc, build-docker-ci-image]
     uses: ./.github/workflows/tf-talk-book-service.yaml
     with:
       tf_root: infrastructure/talk-booking-service/development

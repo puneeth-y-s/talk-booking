@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/${{ github.actor }}/talk-booking:cicd-python3.11-slim
+      image: ghcr.io/${{ github.actor }}/talk-booking:talk-booking-cicd-docker
       options: --user root
 
     env:
