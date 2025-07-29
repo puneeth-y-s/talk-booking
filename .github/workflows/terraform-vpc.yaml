@@ -39,16 +39,17 @@ jobs:
 
       - name: Terraform plan
         id: plan
-        run: terraform plan -out=main.tfplan -lock=false -detailed-exitcode
-             return_code=$?
-             set -e
-             if [$return_code -eq 1]; then
-                 exit 1
-             elif [$return_code -eq 2]; then
-                 echo "changes_present=true" >> $GITHUB_OUTPUT
-             else
-                 echo "changes_present=false" >> $GITHUB_OUTPUT
-             fi
+        run: |
+          terraform plan -out=main.tfplan -lock=false -detailed-exitcode
+          return_code=$?
+          set -e
+          if [ $return_code -eq 1 ]; then
+              exit 1
+          elif [ $return_code -eq 2 ]; then
+              echo "changes_present=true" >> $GITHUB_OUTPUT
+          else
+              echo "changes_present=false" >> $GITHUB_OUTPUT
+          fi
         working-directory: ${{ inputs.tf_root }}
         shell: bash {0}
 
