@@ -1,4 +1,8 @@
 terraform {
+  backend "s3" {
+    key = "global/s3/terraform.tfstate"
+  }
+
   required_providers {
     aws = ">=5.0, < 6.0"
   }
@@ -44,3 +48,5 @@ resource "aws_dynamodb_table" "terraform_state" {
     type = "S"
   }
 }
+
+
