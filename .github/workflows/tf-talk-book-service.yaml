@@ -63,3 +63,60 @@ jobs:
         if: steps.plan.outputs.changes_present == 'true'
         run: terraform apply -input=false -lock=false main.tfplan
         working-directory: ${{ inputs.tf_root }}
+
+  docker-build-and-push:
+    name: Build and Push Docker Image to ECR
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/${{ github.actor }}/talk-booking:cicd-python3.11-slim
+      options: --user root
+
+    env:
+      ECR_REGISTRY: 889039329222.dkr.ecr.us-east-1.amazonaws.com
+      ECR_REPOSITORY: talk-booking-dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
+          | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      - name: Set IMAGE TAG
+        id: meta
+        run: |
+          SHA=${GITHUB_SHA::8}
+          TAG=${ECR_REGISTRY}/${ECR_REPOSITORY}:development-${SHA}
+          echo "IMAGE_TAG=${TAG}" >> $GITHUB_ENV
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Export Poetry requirements
+        run: |
+          cd services/talk_booking/
+          poetry export --without-hashes --with-credentials -f requirements.txt > requirements.txt
+
+      - name: Build Docker image
+        run: |
+          cd services/talk_booking/
+          docker build --pull -t "$IMAGE_TAG" .
+
+      - name: Push Docker image
+        run: docker push "$IMAGE_TAG"
+
+    #   - name: Terraform Destroy
+    #     id: destroy
+    #     run: terraform destroy -input=false --auto-approve
+    #     working-directory: ${{ inputs.tf_root }}

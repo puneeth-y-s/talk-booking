@@ -63,3 +63,8 @@ jobs:
         if: steps.plan.outputs.changes_present == 'true'
         run: terraform apply -input=false -lock=false main.tfplan
         working-directory: ${{ inputs.tf_root }}
+
+      # - name: Terraform Destroy
+      #   id: destroy
+      #   run: terraform destroy -input=false --auto-approve
+      #   working-directory: ${{ inputs.tf_root }}
