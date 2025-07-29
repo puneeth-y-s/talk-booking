@@ -182,14 +182,14 @@ jobs:
           name: junit-report
           path: services/talk_booking/report.xml
 
-  remote-state-backend:
-    uses: ./.github/workflows/remote-state-backend-config.yaml
-    with:
-      tf_root: infrastructure/backend_config
-    secrets: inherit
+  # commenting this since the backend is already created manually
+  # remote-state-backend:
+  #   uses: ./.github/workflows/remote-state-backend-config.yaml
+  #   with:
+  #     tf_root: infrastructure/backend_config
+  #   secrets: inherit
 
   terraform-vpc:
-    needs: remote-state-backend
     uses: ./.github/workflows/tf-vpc-config.yaml
     with:
       tf_root: infrastructure/global/vpc
