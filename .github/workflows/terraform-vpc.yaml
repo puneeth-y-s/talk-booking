@@ -18,7 +18,7 @@ jobs:
       - name: Setup Terraform with specified version on the runner
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.8.4
+          terraform_wrapper: false
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -51,9 +51,9 @@ jobs:
           if [ $return_code -eq 1 ]; then
               exit 1
           elif [ $return_code -eq 2 ]; then
-              echo "changes_present=true" >> "$GITHUB_OUTPUT"
+              echo "changes_present=true" >> $GITHUB_OUTPUT
           else
-              echo "changes_present=false" >> "$GITHUB_OUTPUT"
+              echo "changes_present=false" >> $GITHUB_OUTPUT
           fi
         working-directory: ${{ inputs.tf_root }}
         shell: bash
