@@ -20,5 +20,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python3 - --yes
 
+# Install poetry-plugin-export
+RUN /root/.local/bin/poetry self add poetry-plugin-export
+
 ENV PATH="/root/.local/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
