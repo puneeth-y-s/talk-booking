@@ -103,6 +103,7 @@ jobs:
 
       - name: Set IMAGE TAG
         id: meta
+        shell: bash
         run: |
           SHA=${GITHUB_SHA::8}
           TAG=${ECR_REGISTRY}/${ECR_REPOSITORY}:development-${SHA}
