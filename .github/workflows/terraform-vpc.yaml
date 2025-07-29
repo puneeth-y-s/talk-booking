@@ -9,7 +9,6 @@ on:
 
 jobs:
   terraform_plan_apply:
-    name: "Terraform Plan & Apply Workflow"
     runs-on: ubuntu-latest
 
     steps:
