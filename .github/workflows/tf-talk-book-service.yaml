@@ -58,10 +58,15 @@ jobs:
         working-directory: ${{ inputs.tf_root }}
         shell: bash {0}
 
-      - name: Terraform Apply
-        id: apply
-        if: steps.plan.outputs.changes_present == 'true'
-        run: terraform apply -input=false -lock=false main.tfplan
+    #   - name: Terraform Apply
+    #     id: apply
+    #     if: steps.plan.outputs.changes_present == 'true'
+    #     run: terraform apply -input=false -lock=false main.tfplan
+    #     working-directory: ${{ inputs.tf_root }}
+
+      - name: Terraform Destroy
+        id: destroy
+        run: terraform destroy -input=false --auto-approve
         working-directory: ${{ inputs.tf_root }}
 
   docker-build-and-push:
@@ -122,8 +127,3 @@ jobs:
 
       - name: Push Docker image
         run: docker push "$IMAGE_TAG"
-
-    #   - name: Terraform Destroy
-    #     id: destroy
-    #     run: terraform destroy -input=false --auto-approve
-    #     working-directory: ${{ inputs.tf_root }}
