@@ -1,15 +1,13 @@
-terraform {
-  backend "s3" {
-    key = "global/s3/terraform.tfstate"
-  }
-
-  required_providers {
-    aws = ">=5.0, < 6.0"
-  }
+provider "aws" {
+  region = "us-east-1"
 }
 
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "puneethys-tf-state-1123581321345589"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_s3_bucket_versioning" "terraform_state" {
@@ -49,4 +47,12 @@ resource "aws_dynamodb_table" "terraform_state" {
   }
 }
 
-
+terraform {
+  backend "s3" {
+    bucket         = "puneethys-tf-state-1123581321345589"
+    key            = "global/s3/terraform.tfstate"
+    dynamodb_table = "terraform-state"
+    region         = "us-east-1"
+    encrypt        = true
+  }
+}
