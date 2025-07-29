@@ -104,8 +104,8 @@ jobs:
       - name: Build and push Docker image
         run: |
           cd ci_cd/docker
-          docker build -t $IMAGE_NAME:talk-booking:cicd-docker .
-          docker push $IMAGE_NAME:talk-booking:cicd-docker
+          docker build -t $IMAGE_NAME:talk-booking-cicd-docker .
+          docker push $IMAGE_NAME:talk-booking-cicd-docker
 
   check-code-quality:
     name: Check Code Quality
