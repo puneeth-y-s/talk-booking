@@ -48,7 +48,6 @@ jobs:
         run: |
           terraform plan -out=main.tfplan -lock=false -detailed-exitcode
           return_code=$?
-          set -e
           if [ $return_code -eq 1 ]; then
               exit 1
           elif [ $return_code -eq 2 ]; then
